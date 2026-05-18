@@ -1,5 +1,6 @@
 package com.example.gamecatalog.presentation.screens
 
+
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.animation.AnimatedContent
@@ -13,17 +14,19 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.navigation.Screen
+import com.example.gamecatalog.presentation.components.EmptyState
 import com.example.gamecatalog.presentation.components.GameCard
 import com.example.gamecatalog.presentation.components.ShimmerEffect
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
@@ -100,23 +103,28 @@ fun HomeScreen(
                 when {
                     state.isLoading -> ShimmerGrid()
                     state.error != null -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = "Ошибка: ${state.error}",
-                                color = ErrorColor,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
+                        EmptyState(
+                            icon = Icons.Filled.Warning,
+                            title = "Ошибка загрузки",
+                            description = state.error ?: "Неизвестная ошибка",
+                            actionText = "Попробовать снова",
+                            onActionClick = { viewModel.searchGames(searchQuery) }
+                        )
                     }
                     state.games.isEmpty() -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = "Ничего не найдено 🎮",
-                                color = TextSecondary,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
+                        EmptyState(
+                            icon = Icons.Filled.Search,
+                            title = "Ничего не найдено",
+                            description = if (searchQuery.isNotBlank())
+                                "По запросу \"${searchQuery}\" игр не найдено"
+                            else
+                                "Игры не найдены. Попробуйте другой запрос",
+                            actionText = "Сбросить поиск",
+                            onActionClick = {
+                                searchQuery = ""
+                                viewModel.searchGames()
+                            }
+                        )
                     }
                     else -> GameGrid(games = state.games, onGameClick = onGameClick)
                 }
