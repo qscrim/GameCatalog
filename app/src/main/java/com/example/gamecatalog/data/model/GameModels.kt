@@ -2,7 +2,6 @@ package com.example.gamecatalog.data.model
 
 import com.google.gson.annotations.SerializedName
 
-// Ответ на список/поиск игр
 data class GameListResponse(
     val count: Int,
     val next: String?,
@@ -10,7 +9,6 @@ data class GameListResponse(
     val results: List<Game>
 )
 
-// Основная модель игры
 data class Game(
     val id: Int,
     val name: String,
@@ -24,9 +22,19 @@ data class Game(
     val stores: List<StoreWrapper>?
 )
 
-// Вложенные объекты для корректного парсинга JSON от RAWG
-data class PlatformWrapper(val platform: PlatformInfo)
+data class PlatformWrapper(
+    val platform: PlatformInfo,
+    val requirements: Requirements? = null
+)
+
 data class PlatformInfo(val name: String)
+
+data class Requirements(
+    val minimum: String? = null,
+    val recommended: String? = null
+)
+
 data class Screenshot(val image: String)
+
 data class StoreWrapper(val store: StoreInfo)
 data class StoreInfo(val name: String, val domain: String)

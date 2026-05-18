@@ -89,6 +89,9 @@ fun DetailScreen(
 
 @Composable
 fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
+    // Находим первую платформу с требованиями (обычно это PC)
+    val requirements = game.platforms?.firstOrNull { it.requirements != null }?.requirements
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -133,6 +136,26 @@ fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Блок системных требований
+                if (requirements != null) {
+                    Text(text = "Мин. системные требования", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(DarkSurfaceVariant, shape = RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = requirements.minimum ?: "Не указаны",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary,
+                            lineHeight = 20.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
                 Text(text = "Описание", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
