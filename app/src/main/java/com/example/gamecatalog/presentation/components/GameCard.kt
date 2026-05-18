@@ -1,6 +1,7 @@
 package com.example.gamecatalog.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,13 +28,13 @@ fun GameCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.75f) // Пропорция 4:3 для игровых обложек
+            .aspectRatio(0.75f)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant)
     ) {
         Box {
-            // Фоновая заглушка, если картинка не загрузится
+            // Фоновая заглушка
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -48,7 +49,31 @@ fun GameCard(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Градиент снизу для читаемости текста
+            // Бейдж Metacritic (Новое)
+            if (game.metacritic != null) {
+                val color = when {
+                    game.metacritic >= 75 -> Color(0xFF4CAF50) // Green
+                    game.metacritic >= 50 -> Color(0xFFFFC107) // Yellow
+                    else -> Color(0xFFF44336)                  // Red
+                }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                        .background(color.copy(alpha = 0.9f), shape = RoundedCornerShape(6.dp))
+                        .border(1.dp, color, shape = RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "${game.metacritic}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White
+                    )
+                }
+            }
+
+            // Градиент снизу
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -61,7 +86,7 @@ fun GameCard(
                     )
             )
 
-            // Текст и рейтинг
+            // Текст и пользовательский рейтинг
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -81,9 +106,9 @@ fun GameCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = "Rating",
-                            tint = Color(0xFFFFD700), // Золотой
-                            modifier = Modifier.size(16.dp)
+                            contentDescription = "User Rating",
+                            tint = Color(0xFFFFD700),
+                            modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = String.format("%.1f", game.rating),
