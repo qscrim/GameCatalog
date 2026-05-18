@@ -2,7 +2,6 @@ package com.example.gamecatalog.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,9 +22,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.gamecatalog.data.model.Game
+import com.example.gamecatalog.presentation.components.GameScreenshots
 import com.example.gamecatalog.presentation.viewmodel.GameDetailViewModel
 import com.example.gamecatalog.ui.theme.*
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.clickable
 
 @Composable
 fun DetailScreen(
@@ -89,7 +90,6 @@ fun DetailScreen(
 
 @Composable
 fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
-    // Находим первую платформу с требованиями (обычно это PC)
     val requirements = game.platforms?.firstOrNull { it.requirements != null }?.requirements
 
     LazyColumn(
@@ -154,6 +154,12 @@ fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
                             lineHeight = 20.sp
                         )
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // Блок скриншотов (Новое)
+                if (!game.screenshots.isNullOrEmpty()) {
+                    GameScreenshots(screenshots = game.screenshots)
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
