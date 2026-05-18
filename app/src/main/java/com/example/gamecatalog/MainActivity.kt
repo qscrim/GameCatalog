@@ -4,23 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import com.example.gamecatalog.navigation.AppNavHost
 import com.example.gamecatalog.ui.theme.GameCatalogTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // Убираем отступы под статус-бар
+        enableEdgeToEdge()
         setContent {
             GameCatalogTheme {
-                // Пока заглушка — позже добавим навигацию
-                androidx.compose.material3.Surface(
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.background
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
                 ) {
-                    androidx.compose.material3.Text(
-                        text = "🎮 GameCatalog",
-                        style = androidx.compose.material3.MaterialTheme.typography.headlineLarge,
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary
-                    )
+                    AppNavHost()
                 }
             }
         }
