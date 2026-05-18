@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Тема для Splash Screen -->
+    <style name="Theme.GameCatalog.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/dark_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.GameCatalog</item>
+    </style>
 
+    <!-- Основная тема (для Compose) -->
     <style name="Theme.GameCatalog" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
