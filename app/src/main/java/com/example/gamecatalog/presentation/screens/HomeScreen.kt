@@ -2,6 +2,11 @@ package com.example.gamecatalog.presentation.screens
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -85,28 +90,36 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            when {
-                uiState.isLoading -> ShimmerGrid()
-                uiState.error != null -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "Ошибка: ${uiState.error}",
-                            color = ErrorColor,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(16.dp)
-                        )
+            AnimatedContent(
+                targetState = uiState,
+                transitionSpec = {
+                    fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+                },
+                label = "uiStateAnimation"
+            ) { state ->
+                when {
+                    state.isLoading -> ShimmerGrid()
+                    state.error != null -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "Ошибка: ${state.error}",
+                                color = ErrorColor,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
-                }
-                uiState.games.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "Ничего не найдено 🎮",
-                            color = TextSecondary,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                    state.games.isEmpty() -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "Ничего не найдено 🎮",
+                                color = TextSecondary,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                     }
+                    else -> GameGrid(games = state.games, onGameClick = onGameClick)
                 }
-                else -> GameGrid(games = uiState.games, onGameClick = onGameClick)
             }
         }
     }

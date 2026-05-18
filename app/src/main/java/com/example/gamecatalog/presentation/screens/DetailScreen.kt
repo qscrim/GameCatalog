@@ -1,7 +1,12 @@
 package com.example.gamecatalog.presentation.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,7 +31,6 @@ import com.example.gamecatalog.presentation.components.GameScreenshots
 import com.example.gamecatalog.presentation.viewmodel.GameDetailViewModel
 import com.example.gamecatalog.ui.theme.*
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.clickable
 
 @Composable
 fun DetailScreen(
@@ -82,7 +86,13 @@ fun DetailScreen(
                 }
             }
             uiState.game != null -> {
-                GameDetailsContent(uiState.game!!, paddingValues)
+                // Анимация появления контента
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }
+                ) {
+                    GameDetailsContent(uiState.game!!, paddingValues)
+                }
             }
         }
     }
@@ -137,7 +147,6 @@ fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Блок системных требований
                 if (requirements != null) {
                     Text(text = "Мин. системные требования", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -157,7 +166,6 @@ fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                // Блок скриншотов (Новое)
                 if (!game.screenshots.isNullOrEmpty()) {
                     GameScreenshots(screenshots = game.screenshots)
                     Spacer(modifier = Modifier.height(24.dp))
