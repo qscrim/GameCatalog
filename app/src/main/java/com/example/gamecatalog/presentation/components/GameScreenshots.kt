@@ -5,17 +5,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.gamecatalog.data.model.Screenshot
 import com.example.gamecatalog.ui.theme.*
 
@@ -26,7 +23,7 @@ fun GameScreenshots(screenshots: List<Screenshot>) {
     Column {
         Text(
             text = "Скриншоты",
-            style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium,
             color = TextPrimary,
             modifier = Modifier.padding(bottom = 8.dp)
         )
@@ -56,11 +53,23 @@ fun ScreenshotItem(imageUrl: String) {
                 .fillMaxSize()
                 .background(DarkSurface)
         ) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = imageUrl,
                 contentDescription = "Screenshot",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                loading = {
+                    ShimmerEffect(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                },
+                error = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF333333))
+                    )
+                }
             )
         }
     }

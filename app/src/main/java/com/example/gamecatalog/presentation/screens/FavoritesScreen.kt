@@ -19,8 +19,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.gamecatalog.data.local.FavoriteGame
+import com.example.gamecatalog.presentation.components.ShimmerEffect // <-- ДОБАВЛЕН ИМПОРТ
 import com.example.gamecatalog.presentation.viewmodel.FavoritesViewModel
 import com.example.gamecatalog.ui.theme.*
 
@@ -97,11 +98,23 @@ fun FavoriteCard(game: FavoriteGame, onDelete: () -> Unit) {
         Box {
             Box(modifier = Modifier.fillMaxSize().background(DarkSurface))
 
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = game.backgroundImage,
                 contentDescription = game.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                loading = {
+                    ShimmerEffect(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                },
+                error = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF333333))
+                    )
+                }
             )
 
             Box(

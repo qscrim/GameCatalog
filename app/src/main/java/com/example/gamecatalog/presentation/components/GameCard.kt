@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.ui.theme.*
 
@@ -34,27 +34,40 @@ fun GameCard(
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant)
     ) {
         Box {
-            // Фоновая заглушка
+            // Заглушка фона (если картинка не загрузится)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(DarkSurface)
             )
 
-            // Загрузка обложки
-            AsyncImage(
+            // Загрузка обложки с обработкой ошибок
+            SubcomposeAsyncImage(
                 model = game.backgroundImage,
                 contentDescription = game.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                loading = {
+                    ShimmerEffect(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                },
+                error = {
+                    // Если ошибка — показываем просто темный фон
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF333333))
+                    )
+                }
             )
 
-            // Бейдж Metacritic (Новое)
+            // Бейдж Metacritic
             if (game.metacritic != null) {
                 val color = when {
-                    game.metacritic >= 75 -> Color(0xFF4CAF50) // Green
-                    game.metacritic >= 50 -> Color(0xFFFFC107) // Yellow
-                    else -> Color(0xFFF44336)                  // Red
+                    game.metacritic >= 75 -> Color(0xFF4CAF50)
+                    game.metacritic >= 50 -> Color(0xFFFFC107)
+                    else -> Color(0xFFF44336)
                 }
 
                 Box(
@@ -86,7 +99,7 @@ fun GameCard(
                     )
             )
 
-            // Текст и пользовательский рейтинг
+            // Текст и рейтинг
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -106,7 +119,7 @@ fun GameCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = "User Rating",
+                            contentDescription = "Rating",
                             tint = Color(0xFFFFD700),
                             modifier = Modifier.size(14.dp)
                         )
