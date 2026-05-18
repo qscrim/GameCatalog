@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.presentation.components.GameScreenshots
+import com.example.gamecatalog.presentation.components.SimilarGamesList
 import com.example.gamecatalog.presentation.viewmodel.GameDetailViewModel
 import com.example.gamecatalog.ui.theme.*
 import kotlinx.coroutines.launch
@@ -90,7 +91,14 @@ fun DetailScreen(
                     visible = true,
                     enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }
                 ) {
-                    GameDetailsContent(uiState.game!!, paddingValues)
+                    GameDetailsContent(
+                        game = uiState.game!!,
+                        similarGames = uiState.similarGames,
+                        paddingValues = paddingValues,
+                        onGameClick = { id ->
+                            navController.navigate("detail/$id")
+                        }
+                    )
                 }
             }
         }
@@ -98,7 +106,12 @@ fun DetailScreen(
 }
 
 @Composable
-fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
+fun GameDetailsContent(
+    game: Game,
+    similarGames: List<Game>,
+    paddingValues: PaddingValues,
+    onGameClick: (Int) -> Unit
+) {
     val requirements = game.platforms?.firstOrNull { it.requirements != null }?.requirements
 
     LazyColumn(
@@ -136,13 +149,11 @@ fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Жанры (Новое)
                 if (!game.genres.isNullOrEmpty()) {
                     Text(text = "Жанры:", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
                     Spacer(modifier = Modifier.height(4.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         game.genres.forEachIndexed { index, genreWrapper ->
-                            // Разные цвета для разных жанров для красоты
                             val colors = listOf(AccentPrimary, AccentSecondary, Color(0xFFFFB74D), Color(0xFF90CAF9))
                             val color = colors[index % colors.size]
 
@@ -190,6 +201,12 @@ fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
 
                 if (!game.screenshots.isNullOrEmpty()) {
                     GameScreenshots(screenshots = game.screenshots)
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // Блок похожих игр (Новое)
+                if (similarGames.isNotEmpty()) {
+                    SimilarGamesList(games = similarGames, onGameClick = onGameClick)
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 

@@ -26,9 +26,15 @@ interface RawgApi {
         @Path("id") gameId: Int,
         @Query("key") apiKey: String = ApiConfig.API_KEY
     ): Game
+
+    // Новый эндпоинт для похожих игр
+    @GET("games/{id}/additions")
+    suspend fun getAdditions(
+        @Path("id") gameId: Int,
+        @Query("key") apiKey: String = ApiConfig.API_KEY
+    ): GameListResponse
 }
 
-// Объект для чтения API ключа
 object ApiConfig {
     val API_KEY: String by lazy { loadApiKey() }
 
