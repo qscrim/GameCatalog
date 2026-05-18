@@ -5,19 +5,18 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,6 +25,7 @@ import coil.compose.AsyncImage
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.presentation.viewmodel.GameDetailViewModel
 import com.example.gamecatalog.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun DetailScreen(
@@ -34,6 +34,7 @@ fun DetailScreen(
     viewModel: GameDetailViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(gameId) {
         viewModel.loadGameDetails(gameId)
@@ -41,13 +42,29 @@ fun DetailScreen(
 
     Scaffold(
         topBar = {
-            IconButton(
-                onClick = { navController.popBackStack() },
+            Row(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(50))
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад", tint = Color.White)
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(50))
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад", tint = Color.White)
+                }
+
+                IconButton(
+                    onClick = { scope.launch { viewModel.toggleFavorite() } },
+                    modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(50))
+                ) {
+                    Icon(
+                        imageVector = if (uiState.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Избранное",
+                        tint = if (uiState.isFavorite) Color(0xFFE91E63) else Color.White
+                    )
+                }
             }
         },
         containerColor = DarkBackground

@@ -4,26 +4,31 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.gamecatalog.data.model.Game
+import com.example.gamecatalog.navigation.Screen
+import com.example.gamecatalog.presentation.components.GameCard
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
 import com.example.gamecatalog.ui.theme.TextSecondary
-import com.example.gamecatalog.presentation.components.GameCard
 
 @Composable
 fun HomeScreen(
     onGameClick: (Int) -> Unit,
+    navController: NavController? = null,
     viewModel: GameViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
 
-    // Загружаем популярные игры при первом открытии
     LaunchedEffect(Unit) {
         viewModel.searchGames()
     }
@@ -33,25 +38,41 @@ fun HomeScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Поле поиска
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { query ->
-                searchQuery = query
-                viewModel.searchGames(query)
-            },
-            label = { Text("Поиск игр...") },
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { query ->
+                    searchQuery = query
+                    viewModel.searchGames(query)
+                },
+                label = { Text("Поиск игр...") },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = null)
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             )
-        )
+
+            if (navController != null) {
+                IconButton(onClick = { navController.navigate(Screen.Favorites.route) }) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "Избранное",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Отображение состояния
         when {
             uiState.isLoading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
