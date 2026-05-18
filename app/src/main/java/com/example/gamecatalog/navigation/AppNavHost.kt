@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gamecatalog.presentation.screens.HomeScreen
+import com.example.gamecatalog.presentation.screens.DetailScreen
 
 @Composable
 fun AppNavHost(
@@ -24,7 +25,10 @@ fun AppNavHost(
         }
         // Заглушки для будущих экранов
         composable(Screen.Detail.route) { backStackEntry ->
-            // TODO: DetailScreen(navController, gameId)
+            val gameId = backStackEntry.arguments?.getString("gameId")?.toIntOrNull()
+            if (gameId != null) {
+                DetailScreen(navController = navController, gameId = gameId)
+            }
         }
         composable(Screen.Favorites.route) {
             // TODO: FavoritesScreen(navController)
