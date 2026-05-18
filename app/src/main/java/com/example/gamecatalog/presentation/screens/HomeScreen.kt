@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
 import com.example.gamecatalog.ui.theme.TextSecondary
+import com.example.gamecatalog.presentation.components.GameCard
 
 @Composable
 fun HomeScreen(
@@ -83,17 +84,10 @@ fun GameGrid(games: List<Game>, onGameClick: (Int) -> Unit) {
         modifier = Modifier.fillMaxSize()
     ) {
         items(games) { game ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { onGameClick(game.id) },
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(text = game.name, style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "ID: ${game.id}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                }
-            }
+            GameCard(
+                game = game,
+                onClick = { onGameClick(game.id) }
+            )
         }
     }
 }
