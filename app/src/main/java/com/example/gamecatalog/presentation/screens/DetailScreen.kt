@@ -86,7 +86,6 @@ fun DetailScreen(
                 }
             }
             uiState.game != null -> {
-                // Анимация появления контента
                 AnimatedVisibility(
                     visible = true,
                     enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }
@@ -136,6 +135,29 @@ fun GameDetailsContent(game: Game, paddingValues: PaddingValues) {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Жанры (Новое)
+                if (!game.genres.isNullOrEmpty()) {
+                    Text(text = "Жанры:", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        game.genres.forEachIndexed { index, genreWrapper ->
+                            // Разные цвета для разных жанров для красоты
+                            val colors = listOf(AccentPrimary, AccentSecondary, Color(0xFFFFB74D), Color(0xFF90CAF9))
+                            val color = colors[index % colors.size]
+
+                            Box(
+                                modifier = Modifier
+                                    .background(color.copy(alpha = 0.2f), shape = RoundedCornerShape(12.dp))
+                                    .border(1.dp, color, shape = RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(text = genreWrapper.name, style = MaterialTheme.typography.bodyMedium, color = color)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 Text(text = "Платформы:", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
                 Spacer(modifier = Modifier.height(4.dp))

@@ -16,6 +16,7 @@ data class Game(
     val rating: Double?,
     val released: String?,
     val platforms: List<PlatformWrapper>?,
+    val genres: List<GenreWrapper>?, // <--- НОВОЕ ПОЛЕ
     @SerializedName("short_screenshots") val screenshots: List<Screenshot>?,
     @SerializedName("description_raw") val description: String?,
     val metacritic: Int?,
@@ -28,6 +29,8 @@ data class PlatformWrapper(
 )
 
 data class PlatformInfo(val name: String)
+
+data class GenreWrapper(val name: String) // <--- НОВАЯ МОДЕЛЬ
 
 data class Requirements(
     val minimum: String? = null,
