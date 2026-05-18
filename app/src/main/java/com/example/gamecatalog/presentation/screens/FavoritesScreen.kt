@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -20,88 +19,55 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.gamecatalog.data.local.FavoriteGame
 import com.example.gamecatalog.presentation.viewmodel.FavoritesViewModel
 import com.example.gamecatalog.ui.theme.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.ExperimentalMaterial3Api
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
-    navController: NavController,
     viewModel: FavoritesViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Избранное", color = TextPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад",
-                            tint = TextPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground
-                )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { query ->
+                searchQuery = query
+                viewModel.loadFavorites(query)
+            },
+            label = { Text("Поиск в избранном...") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            singleLine = true,
+            leadingIcon = { Icon(Icons.Default.Search, null, tint = TextSecondary) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = AccentPrimary,
+                unfocusedBorderColor = DarkSurfaceVariant
             )
-        },
-        containerColor = DarkBackground
-    ) { paddingValues ->
-        PullToRefreshBox(
-            isRefreshing = uiState.isLoading,
-            onRefresh = { viewModel.loadFavorites(searchQuery) },
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
-            ) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { query ->
-                        searchQuery = query
-                        viewModel.loadFavorites(query)
-                    },
-                    label = { Text("Поиск в избранном...") },
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Search, null, tint = TextSecondary) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = AccentPrimary,
-                        unfocusedBorderColor = DarkSurfaceVariant
-                    )
-                )
+        )
 
-                when {
-                    uiState.isLoading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = AccentPrimary)
-                        }
-                    }
-                    uiState.favorites.isEmpty() -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Список пуст 📭", style = MaterialTheme.typography.titleLarge, color = TextSecondary)
-                                Text("Добавьте игры из каталога", style = MaterialTheme.typography.bodyMedium, color = TextSecondary.copy(alpha = 0.7f))
-                            }
-                        }
-                    }
-                    else -> {
-                        FavoritesGrid(games = uiState.favorites, onRemove = { viewModel.removeFavorite(it) })
+        when {
+            uiState.isLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = AccentPrimary)
+                }
+            }
+            uiState.favorites.isEmpty() -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Список пуст ", style = MaterialTheme.typography.titleLarge, color = TextSecondary)
+                        Text("Добавьте игры из каталога", style = MaterialTheme.typography.bodyMedium, color = TextSecondary.copy(alpha = 0.7f))
                     }
                 }
+            }
+            else -> {
+                FavoritesGrid(games = uiState.favorites, onRemove = { viewModel.removeFavorite(it) })
             }
         }
     }
@@ -124,18 +90,12 @@ fun FavoritesGrid(games: List<FavoriteGame>, onRemove: (FavoriteGame) -> Unit) {
 @Composable
 fun FavoriteCard(game: FavoriteGame, onDelete: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(0.75f),
+        modifier = Modifier.fillMaxWidth().aspectRatio(0.75f),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant)
     ) {
         Box {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(DarkSurface)
-            )
+            Box(modifier = Modifier.fillMaxSize().background(DarkSurface))
 
             AsyncImage(
                 model = game.backgroundImage,
@@ -157,9 +117,7 @@ fun FavoriteCard(game: FavoriteGame, onDelete: () -> Unit) {
             )
 
             Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(12.dp)
+                modifier = Modifier.align(Alignment.BottomStart).padding(12.dp)
             ) {
                 Text(
                     text = game.name,

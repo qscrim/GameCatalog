@@ -1,6 +1,5 @@
 package com.example.gamecatalog.presentation.screens
 
-
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.animation.AnimatedContent
@@ -14,18 +13,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.gamecatalog.data.model.Game
-import com.example.gamecatalog.navigation.Screen
 import com.example.gamecatalog.presentation.components.EmptyState
 import com.example.gamecatalog.presentation.components.GameCard
 import com.example.gamecatalog.presentation.components.ShimmerEffect
@@ -36,7 +31,6 @@ import com.example.gamecatalog.ui.theme.*
 @Composable
 fun HomeScreen(
     onGameClick: (Int) -> Unit,
-    navController: NavController? = null,
     viewModel: GameViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -56,40 +50,25 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Row(
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { query ->
+                    searchQuery = query
+                    viewModel.searchGames(query)
+                },
+                label = { Text("Поиск игр...") },
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { query ->
-                        searchQuery = query
-                        viewModel.searchGames(query)
-                    },
-                    label = { Text("Поиск игр...") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = AccentPrimary,
-                        unfocusedBorderColor = DarkSurfaceVariant,
-                        focusedLabelColor = AccentPrimary,
-                        unfocusedLabelColor = TextSecondary
-                    )
+                singleLine = true,
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = AccentPrimary,
+                    unfocusedBorderColor = DarkSurfaceVariant,
+                    focusedLabelColor = AccentPrimary,
+                    unfocusedLabelColor = TextSecondary
                 )
-
-                if (navController != null) {
-                    IconButton(onClick = { navController.navigate(Screen.Favorites.route) }) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = "Избранное",
-                            tint = AccentSecondary
-                        )
-                    }
-                }
-            }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -104,7 +83,7 @@ fun HomeScreen(
                     state.isLoading -> ShimmerGrid()
                     state.error != null -> {
                         EmptyState(
-                            icon = Icons.Filled.Warning,
+                            icon = Icons.Default.Warning,
                             title = "Ошибка загрузки",
                             description = state.error ?: "Неизвестная ошибка",
                             actionText = "Попробовать снова",
@@ -113,7 +92,7 @@ fun HomeScreen(
                     }
                     state.games.isEmpty() -> {
                         EmptyState(
-                            icon = Icons.Filled.Search,
+                            icon = Icons.Default.Search,
                             title = "Ничего не найдено",
                             description = if (searchQuery.isNotBlank())
                                 "По запросу \"${searchQuery}\" игр не найдено"
@@ -181,10 +160,7 @@ fun GameGrid(games: List<Game>, onGameClick: (Int) -> Unit) {
         modifier = Modifier.fillMaxSize()
     ) {
         items(games) { game ->
-            GameCard(
-                game = game,
-                onClick = { onGameClick(game.id) }
-            )
+            GameCard(game = game, onClick = { onGameClick(game.id) })
         }
     }
 }
