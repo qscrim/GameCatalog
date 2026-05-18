@@ -73,15 +73,8 @@ class GameRepository(context: Context) {
         }
     }
 
-    suspend fun removeFromFavorites(game: Game) {
+    suspend fun removeFromFavorites(fav: FavoriteGame) {
         withContext(Dispatchers.IO) {
-            val fav = FavoriteGame(
-                id = game.id,
-                name = game.name,
-                backgroundImage = game.backgroundImage,
-                rating = game.rating,
-                released = game.released
-            )
             favoriteDao.deleteFavorite(fav)
         }
     }
