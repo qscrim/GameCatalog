@@ -31,11 +31,13 @@ import com.example.gamecatalog.ui.theme.*
 @Composable
 fun HomeScreen(
     onGameClick: (Int) -> Unit,
+    navController: androidx.navigation.NavController? = null,
     viewModel: GameViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
 
+    // При старте загружаем список (уже есть в init ViewModel, но для надежности)
     LaunchedEffect(Unit) {
         viewModel.searchGames()
     }
@@ -50,25 +52,41 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { query ->
-                    searchQuery = query
-                    viewModel.searchGames(query)
-                },
-                label = { Text("Поиск игр...") },
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AccentPrimary,
-                    unfocusedBorderColor = DarkSurfaceVariant,
-                    focusedLabelColor = AccentPrimary,
-                    unfocusedLabelColor = TextSecondary
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { query ->
+                        searchQuery = query
+                        // Используем debounce-метод
+                        viewModel.onSearchQueryChanged(query)
+                    },
+                    label = { Text("Поиск игр...") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AccentPrimary,
+                        unfocusedBorderColor = DarkSurfaceVariant,
+                        focusedLabelColor = AccentPrimary,
+                        unfocusedLabelColor = TextSecondary
+                    )
                 )
-            )
+
+                if (navController != null) {
+                    IconButton(onClick = { navController.navigate("favorites") }) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "Избранное",
+                            tint = AccentSecondary
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -127,23 +145,15 @@ fun ShimmerGrid() {
             ) {
                 Column {
                     ShimmerEffect(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(0.75f)
+                        modifier = Modifier.fillMaxWidth().aspectRatio(0.75f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     ShimmerEffect(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .height(20.dp)
-                            .fillMaxWidth(0.7f)
+                        modifier = Modifier.padding(horizontal = 12.dp).height(20.dp).fillMaxWidth(0.7f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     ShimmerEffect(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            .height(12.dp)
-                            .fillMaxWidth(0.4f)
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp).height(12.dp).fillMaxWidth(0.4f)
                     )
                 }
             }
