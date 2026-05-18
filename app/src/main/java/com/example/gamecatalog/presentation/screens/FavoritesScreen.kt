@@ -1,7 +1,6 @@
 package com.example.gamecatalog.presentation.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -26,6 +25,8 @@ import coil.compose.AsyncImage
 import com.example.gamecatalog.data.local.FavoriteGame
 import com.example.gamecatalog.presentation.viewmodel.FavoritesViewModel
 import com.example.gamecatalog.ui.theme.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,46 +57,50 @@ fun FavoritesScreen(
         },
         containerColor = DarkBackground
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { viewModel.loadFavorites(searchQuery) },
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Поиск
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { query ->
-                    searchQuery = query
-                    viewModel.loadFavorites(query)
-                },
-                label = { Text("Поиск в избранном...") },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Search, null, tint = TextSecondary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AccentPrimary,
-                    unfocusedBorderColor = DarkSurfaceVariant
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { query ->
+                        searchQuery = query
+                        viewModel.loadFavorites(query)
+                    },
+                    label = { Text("Поиск в избранном...") },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.Search, null, tint = TextSecondary) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AccentPrimary,
+                        unfocusedBorderColor = DarkSurfaceVariant
+                    )
                 )
-            )
 
-            // Состояния
-            when {
-                uiState.isLoading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = AccentPrimary)
-                    }
-                }
-                uiState.favorites.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Список пуст", style = MaterialTheme.typography.titleLarge, color = TextSecondary)
-                            Text("Добавьте игры из каталога", style = MaterialTheme.typography.bodyMedium, color = TextSecondary.copy(alpha = 0.7f))
+                when {
+                    uiState.isLoading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = AccentPrimary)
                         }
                     }
-                }
-                else -> {
-                    FavoritesGrid(games = uiState.favorites, onRemove = { viewModel.removeFavorite(it) })
+                    uiState.favorites.isEmpty() -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Список пуст 📭", style = MaterialTheme.typography.titleLarge, color = TextSecondary)
+                                Text("Добавьте игры из каталога", style = MaterialTheme.typography.bodyMedium, color = TextSecondary.copy(alpha = 0.7f))
+                            }
+                        }
+                    }
+                    else -> {
+                        FavoritesGrid(games = uiState.favorites, onRemove = { viewModel.removeFavorite(it) })
+                    }
                 }
             }
         }
@@ -121,13 +126,11 @@ fun FavoriteCard(game: FavoriteGame, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.75f)
-            .clickable { },
+            .aspectRatio(0.75f),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant)
     ) {
         Box {
-            // Заглушка фона
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -141,7 +144,6 @@ fun FavoriteCard(game: FavoriteGame, onDelete: () -> Unit) {
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Градиент
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -171,7 +173,6 @@ fun FavoriteCard(game: FavoriteGame, onDelete: () -> Unit) {
                 }
             }
 
-            // Кнопка удаления
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier

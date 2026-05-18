@@ -1,5 +1,7 @@
 package com.example.gamecatalog.presentation.screens
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -22,6 +24,7 @@ import com.example.gamecatalog.presentation.components.ShimmerEffect
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
 import com.example.gamecatalog.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onGameClick: (Int) -> Unit,
@@ -31,78 +34,84 @@ fun HomeScreen(
     var searchQuery by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
 
-    // Загружаем игры при старте
     LaunchedEffect(Unit) {
         viewModel.searchGames()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = { viewModel.searchGames(searchQuery) },
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Шапка с поиском
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { query ->
-                    searchQuery = query
-                    viewModel.searchGames(query)
-                },
-                label = { Text("Поиск игр...") },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AccentPrimary,
-                    unfocusedBorderColor = DarkSurfaceVariant,
-                    focusedLabelColor = AccentPrimary,
-                    unfocusedLabelColor = TextSecondary
-                )
-            )
-
-            if (navController != null) {
-                IconButton(onClick = { navController.navigate(Screen.Favorites.route) }) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Избранное",
-                        tint = AccentSecondary
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { query ->
+                        searchQuery = query
+                        viewModel.searchGames(query)
+                    },
+                    label = { Text("Поиск игр...") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary)
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AccentPrimary,
+                        unfocusedBorderColor = DarkSurfaceVariant,
+                        focusedLabelColor = AccentPrimary,
+                        unfocusedLabelColor = TextSecondary
                     )
-                }
-            }
-        }
+                )
 
-        Spacer(modifier = Modifier.height(20.dp))
+                if (navController != null) {
+                    IconButton(onClick = { navController.navigate(Screen.Favorites.route) }) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "Избранное",
+                            tint = AccentSecondary
+                        )
+                    }
+                }
+            }
 
-        // Логика отображения (Спиннер заменен на Shimmer сетку)
-        when {
-            uiState.isLoading -> {
-                // Красивая сетка-заглушка вместо простого спиннера
-                ShimmerGrid()
-            }
-            uiState.error != null -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "Ошибка: ${uiState.error}", color = ErrorColor, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            when {
+                uiState.isLoading -> ShimmerGrid()
+                uiState.error != null -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Ошибка: ${uiState.error}",
+                            color = ErrorColor,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
-            }
-            uiState.games.isEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "Ничего не найдено ", color = TextSecondary, style = MaterialTheme.typography.bodyLarge)
+                uiState.games.isEmpty() -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Ничего не найдено 🎮",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
-            }
-            else -> {
-                GameGrid(games = uiState.games, onGameClick = onGameClick)
+                else -> GameGrid(games = uiState.games, onGameClick = onGameClick)
             }
         }
     }
 }
 
-// Новая функция: сетка из мерцающих карточек
 @Composable
 fun ShimmerGrid() {
     LazyVerticalGrid(
@@ -111,20 +120,17 @@ fun ShimmerGrid() {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        // Рисуем 6 фейковых карточек, пока грузится интернет
         items(6) {
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant)
             ) {
                 Column {
-                    // Картинка мерцает
                     ShimmerEffect(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(0.75f)
                     )
-                    // Текст мерцает
                     Spacer(modifier = Modifier.height(8.dp))
                     ShimmerEffect(
                         modifier = Modifier
