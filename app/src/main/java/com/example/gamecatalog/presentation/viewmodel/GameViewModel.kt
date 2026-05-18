@@ -1,6 +1,7 @@
 package com.example.gamecatalog.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.data.repository.GameRepository
@@ -10,28 +11,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// Состояние UI для списка игр
 data class GameUiState(
     val games: List<Game> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null
 )
 
-class GameViewModel : ViewModel() {
-    private val repository = GameRepository()
+// Наследуем AndroidViewModel для доступа к контексту
+class GameViewModel(app: Application) : AndroidViewModel(app) {
+    private val repository = GameRepository(app)
 
-    // Приватный изменяемый поток состояния
     private val _uiState = MutableStateFlow(GameUiState())
-    // Публичный поток только для чтения
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
-    // Функция поиска/загрузки игр
     fun searchGames(query: String = "") {
         viewModelScope.launch {
-            // Показываем загрузку
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            // Вызываем репозиторий
             when (val result = repository.fetchGames(query.ifBlank { null })) {
                 is NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(
@@ -45,7 +41,7 @@ class GameViewModel : ViewModel() {
                         isLoading = false
                     )
                 }
-                is NetworkResult.Loading -> {} // Не используется в этом вызове
+                is NetworkResult.Loading -> {}
             }
         }
     }
