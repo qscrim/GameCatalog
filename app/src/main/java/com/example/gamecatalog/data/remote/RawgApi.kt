@@ -1,5 +1,6 @@
 package com.example.gamecatalog.data.remote
 
+import com.example.gamecatalog.BuildConfig
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.data.model.GameListResponse
 import okhttp3.OkHttpClient
@@ -9,54 +10,29 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
-import java.io.File
-import java.io.FileInputStream
-import java.util.Properties
+import java.net.InetSocketAddress
+import java.net.Proxy
+import java.util.concurrent.TimeUnit
 
 interface RawgApi {
     @GET("games")
     suspend fun getGames(
         @Query("search") query: String? = null,
         @Query("page") page: Int = 1,
-        @Query("key") apiKey: String = ApiConfig.API_KEY
+        @Query("key") apiKey: String = BuildConfig.RAWG_API_KEY
     ): GameListResponse
 
     @GET("games/{id}")
     suspend fun getGameDetails(
         @Path("id") gameId: Int,
-        @Query("key") apiKey: String = ApiConfig.API_KEY
+        @Query("key") apiKey: String = BuildConfig.RAWG_API_KEY
     ): Game
 
-    // Новый эндпоинт для похожих игр
     @GET("games/{id}/additions")
     suspend fun getAdditions(
         @Path("id") gameId: Int,
-        @Query("key") apiKey: String = ApiConfig.API_KEY
+        @Query("key") apiKey: String = BuildConfig.RAWG_API_KEY
     ): GameListResponse
-}
-
-object ApiConfig {
-    val API_KEY: String by lazy { loadApiKey() }
-
-    private fun loadApiKey(): String {
-        return try {
-            val properties = Properties()
-            val rootDir = System.getProperty("user.dir")
-            val localPropertiesFile = File(rootDir, "local.properties")
-
-            if (localPropertiesFile.exists()) {
-                FileInputStream(localPropertiesFile).use { input ->
-                    properties.load(input)
-                }
-                properties.getProperty("rawg_api_key", "")
-            } else {
-                ""
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ""
-        }
-    }
 }
 
 object ApiClient {
@@ -64,8 +40,30 @@ object ApiClient {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
+    // === НАСТРОЙКИ ===
+    // Впиши СВОЙ IP из ipconfig (начинается на 192.168...)
+    private const val PROXY_HOST = "172.20.10.13" // <-- ЗАМЕНИ НА СВОЙ!
+    private const val PROXY_PORT = 2080            // Порт Mixed/Socks из NekoBox
+    // =================
+
     private val client = OkHttpClient.Builder()
         .addInterceptor(logging)
+        // Используем SOCKS5, так как NekoBox (V2Ray) работает с ним стабильнее
+        .proxy(Proxy(Proxy.Type.SOCKS, InetSocketAddress(PROXY_HOST, PROXY_PORT)))
+        // Большие таймауты, чтобы не обрывало
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        // Переподключение при обрыве
+        .retryOnConnectionFailure(true)
+        // Держим соединение живым
+        .connectionPool(
+            okhttp3.ConnectionPool(
+                maxIdleConnections = 5,
+                keepAliveDuration = 5,
+                TimeUnit.MINUTES
+            )
+        )
         .build()
 
     val retrofit: Retrofit = Retrofit.Builder()

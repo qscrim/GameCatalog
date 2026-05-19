@@ -1,11 +1,14 @@
 import java.util.Properties
 import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
 }
+
+// Читаем ключ из local.properties
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) load(FileInputStream(file))
@@ -22,23 +25,35 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
         compose = true
-        buildConfig = true // Важно для генерации BuildConfig.RAWG_API_KEY
+        buildConfig = true // Обязательно для BuildConfig.RAWG_API_KEY
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
+    // ОДИН блок buildTypes с правильными настройками
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("String", "RAWG_API_KEY", rawgApiKey)
+            signingConfig = signingConfigs.getByName("release")
+            buildConfigField("String", "RAWG_API_KEY", rawgApiKey) // <-- Ключ для релиза
         }
         debug {
-            buildConfigField("String", "RAWG_API_KEY", rawgApiKey)
+            isMinifyEnabled = false
+            buildConfigField("String", "RAWG_API_KEY", rawgApiKey) // <-- Ключ для дебага
         }
     }
 
@@ -52,7 +67,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -68,6 +82,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     // Сеть
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -85,6 +100,8 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
+
+    // Навигация + Splash
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.core:core-splashscreen:1.0.1")
 }
